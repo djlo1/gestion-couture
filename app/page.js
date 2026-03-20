@@ -1,9 +1,8 @@
 "use client"
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { Plus, Users, Ruler, Scissors, Search, ChevronRight } from 'lucide-react';
+import { Plus, Users, Ruler, Scissors, Search, ChevronRight, Phone, UserPlus, X } from 'lucide-react';
 
-// Connexion Supabase (utilisera les variables d'environnement de Vercel)
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -17,9 +16,7 @@ export default function CoutureApp() {
   const [nom, setNom] = useState('');
   const [tel, setTel] = useState('');
 
-  useEffect(() => {
-    fetchClients();
-  }, []);
+  useEffect(() => { fetchClients(); }, []);
 
   async function fetchClients() {
     setLoading(true);
@@ -39,89 +36,117 @@ export default function CoutureApp() {
   }
 
   return (
-    <div className="max-w-md mx-auto min-h-screen bg-gray-50 pb-24">
-      {/* Header */}
-      <div className="bg-indigo-600 text-white p-6 rounded-b-3xl shadow-lg">
-        <h1 className="text-2xl font-bold">Mon Atelier 🧵</h1>
-        <p className="text-indigo-100 opacity-80 text-sm">Gestion de couture</p>
+    <div style={s.container}>
+      {/* HEADER */}
+      <div style={s.header}>
+        <h1 style={s.headerTitle}>Mon Atelier 🧵</h1>
+        <div style={s.searchBar}>
+          <Search size={18} style={{marginRight: 8, opacity: 0.6}} />
+          <input placeholder="Rechercher un client..." style={s.searchInput} />
+        </div>
       </div>
 
-      <div className="p-4">
-        {/* Liste des clients */}
+      <div style={s.content}>
         {activeTab === 'clients' && (
-          <div className="space-y-4">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-bold text-gray-800">Mes Clients</h2>
-              <button 
-                onClick={() => setShowAddForm(true)}
-                className="bg-indigo-600 text-white p-2 rounded-full shadow-md"
-              >
-                <Plus size={24} />
+          <div>
+            <div style={s.sectionHeader}>
+              <h2 style={s.sectionTitle}>Mes Clients ({clients.length})</h2>
+              <button onClick={() => setShowAddForm(true)} style={s.addButton}>
+                <UserPlus size={20} color="white" />
               </button>
             </div>
 
-            {loading ? <p>Chargement...</p> : (
+            {loading ? <div style={s.loading}>Chargement...</div> : (
               clients.map(client => (
-                <div key={client.id} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center">
-                  <div>
-                    <h3 className="font-bold text-gray-800">{client.nom}</h3>
-                    <p className="text-gray-500 text-sm">{client.telephone || 'Pas de numéro'}</p>
+                <div key={client.id} style={s.clientCard}>
+                  <div style={s.clientAvatar}>{client.nom[0]}</div>
+                  <div style={{flex: 1}}>
+                    <div style={s.clientName}>{client.nom}</div>
+                    <div style={s.clientTel}><Phone size={12} /> {client.telephone || 'Non renseigné'}</div>
                   </div>
-                  <ChevronRight className="text-gray-300" />
+                  <ChevronRight size={20} color="#ccc" />
                 </div>
               ))
             )}
           </div>
         )}
 
-        {/* Placeholder pour les autres onglets */}
         {activeTab !== 'clients' && (
-          <div className="text-center py-20 text-gray-400">
-            <p>Cette fonctionnalité arrive bientôt !</p>
+          <div style={s.emptyState}>
+            <div style={{fontSize: 40}}>🚧</div>
+            <p>Bientôt disponible</p>
           </div>
         )}
       </div>
 
-      {/* Formulaire d'ajout (Modal simple) */}
+      {/* FORMULAIRE MODAL */}
       {showAddForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white w-full rounded-3xl p-6 shadow-2xl">
-            <h2 className="text-xl font-bold mb-4">Nouveau Client</h2>
-            <form onSubmit={handleAddClient} className="space-y-4">
+        <div style={s.modalOverlay}>
+          <div style={s.modal}>
+            <div style={s.modalHeader}>
+              <h3>Nouveau Client</h3>
+              <X onClick={() => setShowAddForm(false)} style={{cursor: 'pointer'}} />
+            </div>
+            <form onSubmit={handleAddClient} style={s.form}>
               <input 
-                placeholder="Nom complet" 
-                className="w-full p-4 bg-gray-100 rounded-2xl outline-none focus:ring-2 ring-indigo-500"
+                placeholder="Nom du client" 
+                style={s.input}
                 value={nom} onChange={e => setNom(e.target.value)}
               />
               <input 
-                placeholder="Téléphone" 
-                className="w-full p-4 bg-gray-100 rounded-2xl outline-none"
+                placeholder="Numéro de téléphone" 
+                style={s.input}
                 value={tel} onChange={e => setTel(e.target.value)}
               />
-              <div className="flex gap-3">
-                <button type="button" onClick={() => setShowAddForm(false)} className="flex-1 p-4 text-gray-500 font-bold">Annuler</button>
-                <button type="submit" className="flex-1 bg-indigo-600 text-white p-4 rounded-2xl font-bold shadow-lg">Ajouter</button>
-              </div>
+              <button type="submit" style={s.submitButton}>Enregistrer le client</button>
             </form>
           </div>
         </div>
       )}
 
-      {/* Navigation Mobile */}
-      <nav className="fixed bottom-6 left-4 right-4 bg-white h-20 rounded-3xl shadow-2xl border border-gray-100 flex justify-around items-center px-6 z-40">
-        <button onClick={() => setActiveTab('clients')} className={`flex flex-col items-center ${activeTab === 'clients' ? 'text-indigo-600' : 'text-gray-400'}`}>
+      {/* NAVIGATION BASSE */}
+      <nav style={s.nav}>
+        <button onClick={() => setActiveTab('clients')} style={activeTab === 'clients' ? s.navItemActive : s.navItem}>
           <Users size={24} />
-          <span className="text-[10px] font-bold mt-1">Clients</span>
+          <span style={{fontSize: 10, marginTop: 4}}>Clients</span>
         </button>
-        <button onClick={() => setActiveTab('mesures')} className={`flex flex-col items-center ${activeTab === 'mesures' ? 'text-indigo-600' : 'text-gray-400'}`}>
+        <button onClick={() => setActiveTab('mesures')} style={activeTab === 'mesures' ? s.navItemActive : s.navItem}>
           <Ruler size={24} />
-          <span className="text-[10px] font-bold mt-1">Mesures</span>
+          <span style={{fontSize: 10, marginTop: 4}}>Mesures</span>
         </button>
-        <button onClick={() => setActiveTab('commandes')} className={`flex flex-col items-center ${activeTab === 'commandes' ? 'text-indigo-600' : 'text-gray-400'}`}>
+        <button onClick={() => setActiveTab('travaux')} style={activeTab === 'travaux' ? s.navItemActive : s.navItem}>
           <Scissors size={24} />
-          <span className="text-[10px] font-bold mt-1">Travaux</span>
+          <span style={{fontSize: 10, marginTop: 4}}>Travaux</span>
         </button>
       </nav>
     </div>
   );
 }
+
+// STYLES CSS-IN-JS (Garantis de fonctionner partout)
+const s = {
+  container: { maxWidth: '500px', margin: '0 auto', minHeight: '100vh', backgroundColor: '#f8f9fa', paddingBottom: '100px' },
+  header: { backgroundColor: '#4f46e5', padding: '25px 20px', borderRadius: '0 0 30px 30px', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' },
+  headerTitle: { color: 'white', margin: 0, fontSize: '24px', fontWeight: 'bold' },
+  searchBar: { backgroundColor: 'white', borderRadius: '15px', padding: '10px 15px', display: 'flex', alignItems: 'center', marginTop: '15px' },
+  searchInput: { border: 'none', outline: 'none', width: '100%', fontSize: '14px' },
+  content: { padding: '20px' },
+  sectionHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' },
+  sectionTitle: { fontSize: '18px', fontWeight: 'bold', color: '#333', margin: 0 },
+  addButton: { backgroundColor: '#4f46e5', border: 'none', width: '45px', height: '45px', borderRadius: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(79, 70, 229, 0.3)' },
+  clientCard: { backgroundColor: 'white', padding: '15px', borderRadius: '20px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '15px', boxShadow: '0 2px 5px rgba(0,0,0,0.02)', border: '1px solid #eee' },
+  clientAvatar: { width: '45px', height: '45px', backgroundColor: '#e0e7ff', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4f46e5', fontWeight: 'bold', fontSize: '18px' },
+  clientName: { fontWeight: 'bold', color: '#1f2937', marginBottom: '2px' },
+  clientTel: { color: '#6b7280', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' },
+  loading: { textAlign: 'center', padding: '40px', color: '#999' },
+  nav: { position: 'fixed', bottom: '20px', left: '20px', right: '20px', backgroundColor: 'white', height: '70px', borderRadius: '25px', display: 'flex', justifyContent: 'space-around', alignItems: 'center', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', border: '1px solid #eee' },
+  navItem: { border: 'none', background: 'none', color: '#9ca3af', display: 'flex', flexDirection: 'column', alignItems: 'center' },
+  navItemActive: { border: 'none', background: 'none', color: '#4f46e5', display: 'flex', flexDirection: 'column', alignItems: 'center' },
+  modalOverlay: { position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', zIndex: 100 },
+  modal: { backgroundColor: 'white', width: '100%', borderRadius: '30px', padding: '25px', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' },
+  modalHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' },
+  form: { display: 'flex', flexDirection: 'column', gap: '15px' },
+  input: { padding: '15px', borderRadius: '15px', border: '1px solid #eee', backgroundColor: '#f9fafb', outline: 'none', fontSize: '16px' },
+  submitButton: { backgroundColor: '#4f46e5', color: 'white', border: 'none', padding: '15px', borderRadius: '15px', fontWeight: 'bold', fontSize: '16px', marginTop: '10px' },
+  emptyState: { textAlign: 'center', padding: '60px 20px', color: '#999' }
+};
